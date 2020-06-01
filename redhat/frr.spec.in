@@ -28,6 +28,7 @@
 %{!?with_rpki:          %global  with_rpki          0 }
 %{!?with_rtadv:         %global  with_rtadv         1 }
 %{!?with_watchfrr:      %global  with_watchfrr      1 }
+%{!?with_snmp:          %global  with_snmp          1 }
 
 # user and group
 %{!?frr_user:           %global  frr_user           frr }
@@ -210,7 +211,11 @@ Requires(pre):      initscripts >= 5.60
 Provides:           routingdaemon = %{version}-%{release}
 Obsoletes:          gated mrt zebra frr-sysvinit
 Conflicts:          bird
-
+# net-snmp is required for SNMP AgentX support
+%if %{with_snmp}
+BuildRequires: net-snmp-devel
+Requires: net-snmp
+%endif
 
 %description
 FRRouting is a free software that manages TCP/IP based routing
@@ -379,6 +384,11 @@ developing OSPF-API and frr applications.
     --enable-bfdd \
 %else
     --disable-bfdd \
+%endif
+%if %{with_snmp}
+    --enable-snmp
+%else
+    --disable-snmp
 %endif
     # end
 
@@ -691,7 +701,9 @@ fi
 %{_sbindir}/frrcommon.sh
 %{_sbindir}/frrinit.sh
 %{_sbindir}/watchfrr.sh
-
+%if %{with_snmp}
+    %{_libdir}/frr/modules/*snmp.so
+%endif
 
 %files contrib
 %doc tools
